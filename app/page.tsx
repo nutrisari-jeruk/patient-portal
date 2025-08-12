@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { HeartHandshake, FileText, Microscope, Shield, Clock } from "lucide-react";
+import Link from "next/link";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
