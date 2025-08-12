@@ -1,0 +1,232 @@
+---
+description: Coding standards for Next.js 15 + React 19 + TypeScript
+globs: ts, tsx, js, jsx
+alwaysApply: false
+---
+# Coding Standards and Best Practices
+
+## TypeScript Guidelines
+
+- Use strict TypeScript configuration as defined in [tsconfig.json](mdc:tsconfig.json)
+- Always define proper types for props, state, and function parameters
+- Avoid React.FC; use explicit props and return types for components
+- Prefer interfaces over types for object shapes
+- **Use `import type` for type-only imports:** When importing only types, interfaces, or other type constructs, use `import type` instead of regular `import` to ensure they are removed from the runtime bundle.
+
+### Example:
+```typescript
+// ✅ Correct - Type-only import
+import type { Metadata } from "next";
+import type { User } from "@/lib/types";
+
+// ❌ Incorrect - Regular import for types
+import { Metadata } from "next";
+import { User } from "@/lib/types";
+```
+
+## Component Structure
+
+### File Organization
+- Place components in `app/` directory following Next.js App Router conventions
+- Use `lib/` directory for utility functions and shared logic
+- Create reusable components in `components/` directory when needed
+
+### Component Patterns
+- Use functional components with hooks
+- Implement proper TypeScript interfaces for props
+- Use the `cn()` utility from [lib/utils.ts](mdc:lib/utils.ts) for conditional classes
+- Assume every component is a Server Component by default. Use Client Components only when necessary (e.g., for interactivity or hooks that require the client).
+- `'use client'`: Add "use client" at the top of the file only if the component requires client-side interactivity (e.g., state, event handlers, or hooks such as useEffect, useState).**
+- Create a separate Client Component in the same directory as the page file, and name it according to its purpose (e.g., search.tsx, pagination.tsx).
+
+## Component File Naming
+
+- Component file names must use kebab-case (e.g., `user-profile.tsx`).
+- This ensures consistency and clarity across the codebase.
+
+## Exports Policy
+
+- Default exports are required for Next.js route files: `app/**/page.tsx`, `layout.tsx`, `error.tsx`, `loading.tsx`, and `template.tsx`.
+- Prefer named exports for reusable components, hooks, and utilities to improve discoverability and tree-shaking.
+
+## Handling route `params`
+
+- Prefer resolving `params` in Server Components (route files) and pass plain props down to Client Components.
+- Only access `params` in Client Components when unavoidable; in that case, follow the Next.js 15+ convention below.
+
+### Handling `params` in Client Components (Next.js 15+)
+
+When route parameters (`params`) are accessed within a **Client Component** (a component marked with `"use client"`), they are passed as a `Promise`.
+
+1.  **Use `React.use()`**: To access the value of the `params` object, you must use the `React.use()` hook to "unwrap" the Promise.
+2.  **Type Annotation**: The `params` prop should be typed as `Promise<T>`, where `T` is the type of the params object itself. For example: `{ params: Promise<{ id: string }> }`.
+3.  **Justification**: This rule prevents runtime errors and warnings from Next.js. It ensures your code aligns with the latest conventions for handling asynchronous props in Client Components with React 19 and Next.js 15.
+
+### Example Implementation
+
+```typescript
+"use client";
+
+import { use } from "react";
+
+export default function ExampleClientPage({
+  params,
+}: {
+  // Type params as a Promise
+  params: Promise<{ slug: string }>;
+}) {
+  // Use use() to get the value from the Promise
+  const resolvedParams = use(params);
+
+  return (
+    <div>
+      <h1>Page for Slug: {resolvedParams.slug}</h1>
+    </div>
+  );
+}
+```
+
+## Styling Guidelines
+
+### Tailwind CSS
+- Use Tailwind CSS classes for styling as configured in [app/globals.css](mdc:app/globals.css)
+- Follow the shadcn/ui design system configuration in [components.json](mdc:components.json)
+- Use the `cn()` utility function for merging conditional classes
+- Prefer utility classes over custom CSS
+
+### Responsive Design
+- Use Tailwind's responsive prefixes (sm:, md:, lg:, xl:)
+- Design mobile-first with progressive enhancement
+- Test on multiple screen sizes
+
+## Next.js Best Practices
+
+### App Router
+- Use the App Router pattern with `app/` directory structure
+- Implement proper metadata in [app/layout.tsx](mdc:app/layout.tsx)
+- Use Server Components by default, Client Components when needed
+- Follow Next.js 15 conventions and features
+
+### Performance
+- Use Next.js Image component for optimized images
+- Implement proper loading strategies
+- Use Turbopack for faster development builds
+- Optimize bundle size with proper imports
+
+## Code Quality
+
+### Naming Conventions
+- Use PascalCase for components
+- Use camelCase for functions and variables
+- Use kebab-case for file names
+- Use descriptive names that explain purpose
+
+### DRY Principle
+- **Follow the DRY (Don't Repeat Yourself) principle:** Avoid code duplication by extracting common functionality into reusable functions, components, or utilities.
+- Create shared utilities in the `lib/` directory for common operations
+- Extract repeated UI patterns into reusable components
+- Use constants for repeated values like API endpoints, configuration values, or magic strings
+
+### Examples:
+```typescript
+// ✅ Good - Reusable utility function
+// lib/utils.ts
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(amount);
+};
+
+// ✅ Good - Reusable component
+// components/ui/loading-spinner.tsx
+export const LoadingSpinner = ({ size = "md" }: { size?: "sm" | "md" | "lg" }) => {
+  return <div className={`spinner spinner-${size}`}>Loading...</div>;
+};
+
+// ❌ Bad - Repeated code
+const formatPrice1 = (price: number) => `$${price.toFixed(2)}`;
+const formatPrice2 = (price: number) => `$${price.toFixed(2)}`;
+const formatPrice3 = (price: number) => `$${price.toFixed(2)}`;
+```
+
+### File Structure
+- One component per file
+- Default exports only for route files; prefer named exports elsewhere
+- Use named exports for utilities and types
+- Keep files focused and single-purpose
+
+### Import Hygiene
+- Use `import type` for type-only imports (enforced via ESLint) to keep runtime bundles lean.
+- Enforce import order and grouping (external, internal, relative) using `eslint-plugin-import`.
+
+## Dependencies
+
+### Package Management
+- Use npm as package manager (as shown in [package.json](mdc:package.json))
+- Keep dependencies up to date
+- Use exact or `~` versions for critical dependencies; rely on lockfile for reproducibility
+- Document any custom configurations
+
+### Shadcn UI Usage
+- **Prioritize Shadcn Components:** Always check if there's a suitable Shadcn UI component available before creating a UI component from scratch.
+- **Adding Components:** Use npx shadcn@latest add <component-name> to add components to your project
+- **Customizing Shadcn Styling:** To adjust the styling of Shadcn components, add Tailwind classes directly to the relevant elements within the copied component file. Do not arbitrarily modify the original source files in components/ui/.
+- **Theming:** Adjust the global theme via CSS variables in globals.css according to the Shadcn documentation.
+
+### Key Libraries
+- **UI**: shadcn/ui components with Lucide icons
+- **Styling**: Tailwind CSS v4 with clsx and tailwind-merge
+- **Fonts**: Geist Sans and Geist Mono from Google Fonts
+
+## Linting and Formatting
+
+- Use ESLint with `@typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-import`, and `eslint-plugin-jsx-a11y`.
+- Use Prettier for consistent formatting and integrate with ESLint.
+- Add scripts: `npm run lint`, `npm run format`, and `npm run typecheck` and run them in CI.
+
+## Testing
+
+- Unit tests: `vitest` + `@testing-library/react`.
+- E2E tests: Playwright.
+- Maintain minimum coverage thresholds for critical modules.
+
+## Data Fetching and Caching
+
+- Prefer Server Components and server actions for data fetching.
+- Use `fetch` with `next` options (`{ revalidate, cache }`) to control caching behavior.
+- For client-side data fetching, standardize on SWR or React Query; avoid ad-hoc fetch logic.
+
+## State Management
+
+- Prefer local component state and server actions first.
+- Introduce React Context for cross-cutting concerns (theme, auth) when necessary.
+- Consider lightweight stores (e.g., Zustand) only when justified and localized.
+
+## Error Handling
+
+- Use `error.tsx` and `not-found.tsx` for route-level errors and 404s.
+- Provide a reusable error UI component for consistent messaging.
+- Log server-side errors with appropriate metadata; avoid logging secrets.
+
+## Accessibility (a11y)
+
+- Use semantic HTML, proper labels for form controls, and ensure keyboard navigability.
+- Enforce with `eslint-plugin-jsx-a11y` and include aXe checks in testing where feasible.
+
+## Security and Environment
+
+- Use `NEXT_PUBLIC_` only for values safe to expose to the client; keep secrets server-only.
+- Avoid logging tokens and sensitive data.
+- Consider security headers and CSP configuration in `next.config.ts`.
+
+## Performance Guidelines
+
+- Use dynamic imports for large client-only modules.
+- Memoize expensive components with `React.memo` and use hooks like `useMemo`/`useCallback` when profiling indicates benefit.
+- Use `next/image` for images and avoid unbounded sizes.
+
+## Commits and PRs
+
+- Follow Conventional Commits (`feat:`, `fix:`, `docs:`, etc.).
+- Keep PRs small and focused; include tests, typecheck, and screenshots for UI changes.
