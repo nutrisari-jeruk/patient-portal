@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,7 @@ interface LoginFormData {
 }
 
 export function LoginForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
     identifier: '',
     password: ''
@@ -48,8 +50,7 @@ export function LoginForm() {
       // Here you would typically make an API call to authenticate
       console.log('Login attempt:', formData);
       
-      // For now, just redirect to dashboard (you'll need to create this)
-      // router.push('/dashboard');
+      router.push('/dashboard');
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat login');
