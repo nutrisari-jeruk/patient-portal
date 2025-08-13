@@ -109,10 +109,7 @@ export default function DashboardPage() {
                 <CardContent>
                   <div className="flex gap-3">
                     <Button asChild>
-                      <Link href="#">Lihat Hasil</Link>
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <Link href="#">Riwayat</Link>
+                      <Link href="/dashboard/laboratory">Lihat Hasil</Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -130,10 +127,7 @@ export default function DashboardPage() {
                 <CardContent>
                   <div className="flex gap-3">
                     <Button asChild>
-                      <Link href="#">Lihat Hasil</Link>
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <Link href="#">Riwayat</Link>
+                      <Link href="/dashboard/radiology">Lihat Hasil</Link>
                     </Button>
                   </div>
                 </CardContent>
